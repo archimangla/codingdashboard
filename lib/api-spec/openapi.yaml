@@ -1,0 +1,1112 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: CodeHub - Universal Coding Dashboard API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: user
+    description: User profile and onboarding
+  - name: platforms
+    description: Platform connections and sync
+  - name: dashboard
+    description: Dashboard overview and stats
+  - name: activity
+    description: Activity feed and calendar
+  - name: analytics
+    description: Weekly, monthly, yearly analytics
+  - name: search
+    description: Global search and filters
+  - name: insights
+    description: Auto-generated insights
+  - name: export
+    description: Data export
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # ─── USER / ONBOARDING ───────────────────────────────────────────────────────
+  /user/profile:
+    get:
+      operationId: getUserProfile
+      tags: [user]
+      summary: Get user profile and connected platform handles
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "404":
+          description: Profile not found
+    post:
+      operationId: createUserProfile
+      tags: [user]
+      summary: Create user profile (onboarding)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    patch:
+      operationId: updateUserProfile
+      tags: [user]
+      summary: Update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  # ─── PLATFORMS ───────────────────────────────────────────────────────────────
+  /platforms:
+    get:
+      operationId: listPlatforms
+      tags: [platforms]
+      summary: List all supported platforms with connection status
+      responses:
+        "200":
+          description: Platforms list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlatformStatus"
+
+  /platforms/{platformId}/connect:
+    post:
+      operationId: connectPlatform
+      tags: [platforms]
+      summary: Connect a platform with username or profile URL
+      parameters:
+        - name: platformId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatformConnection"
+      responses:
+        "200":
+          description: Connected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformStatus"
+        "400":
+          description: Invalid credentials
+
+  /platforms/{platformId}/disconnect:
+    delete:
+      operationId: disconnectPlatform
+      tags: [platforms]
+      summary: Disconnect a platform
+      parameters:
+        - name: platformId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Disconnected
+
+  /platforms/{platformId}/sync:
+    post:
+      operationId: syncPlatform
+      tags: [platforms]
+      summary: Trigger a manual sync for a platform
+      parameters:
+        - name: platformId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Sync triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResult"
+
+  /platforms/{platformId}/stats:
+    get:
+      operationId: getPlatformStats
+      tags: [platforms]
+      summary: Get detailed stats for a specific platform
+      parameters:
+        - name: platformId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformDetailStats"
+        "404":
+          description: Platform not connected
+
+  /platforms/sync-all:
+    post:
+      operationId: syncAllPlatforms
+      tags: [platforms]
+      summary: Trigger sync for all connected platforms
+      responses:
+        "200":
+          description: Sync triggered for all platforms
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkSyncResult"
+
+  # ─── DASHBOARD ───────────────────────────────────────────────────────────────
+  /dashboard/overview:
+    get:
+      operationId: getDashboardOverview
+      tags: [dashboard]
+      summary: Get full dashboard overview — stats, streak, today's summary
+      responses:
+        "200":
+          description: Dashboard overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardOverview"
+
+  /dashboard/today:
+    get:
+      operationId: getTodayActivity
+      tags: [dashboard]
+      summary: Get today's solved problems
+      responses:
+        "200":
+          description: Today's activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Submission"
+
+  /dashboard/streak:
+    get:
+      operationId: getStreakInfo
+      tags: [dashboard]
+      summary: Get universal streak data across all platforms
+      responses:
+        "200":
+          description: Streak info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreakInfo"
+
+  # ─── ACTIVITY ────────────────────────────────────────────────────────────────
+  /activity:
+    get:
+      operationId: listActivity
+      tags: [activity]
+      summary: Paginated activity feed with filters
+      parameters:
+        - name: platform
+          in: query
+          schema:
+            type: string
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+            enum: [easy, medium, hard, all]
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: contest_only
+          in: query
+          schema:
+            type: boolean
+        - name: accepted_only
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Activity list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityPage"
+
+  /activity/calendar:
+    get:
+      operationId: getActivityCalendar
+      tags: [activity]
+      summary: Get GitHub-style contribution calendar data
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Calendar data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarDay"
+
+  /activity/timeline:
+    get:
+      operationId: getTimeline
+      tags: [activity]
+      summary: Get infinite-scroll timeline grouped by day
+      parameters:
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Timeline
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimelinePage"
+
+  # ─── ANALYTICS ───────────────────────────────────────────────────────────────
+  /analytics/weekly:
+    get:
+      operationId: getWeeklyAnalytics
+      tags: [analytics]
+      summary: Get weekly analytics — problems per day, difficulty, topics
+      parameters:
+        - name: week_offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Weekly analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeeklyAnalytics"
+
+  /analytics/monthly:
+    get:
+      operationId: getMonthlyAnalytics
+      tags: [analytics]
+      summary: Get monthly analytics — active days, best/worst day, streaks
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: integer
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Monthly analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlyAnalytics"
+
+  /analytics/yearly:
+    get:
+      operationId: getYearlyAnalytics
+      tags: [analytics]
+      summary: Get yearly analytics — heatmaps, monthly trends, growth
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Yearly analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/YearlyAnalytics"
+
+  # ─── SEARCH ──────────────────────────────────────────────────────────────────
+  /search:
+    get:
+      operationId: search
+      tags: [search]
+      summary: Global search across all submissions
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: platform
+          in: query
+          schema:
+            type: string
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+        - name: topic
+          in: query
+          schema:
+            type: string
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
+
+  # ─── INSIGHTS ────────────────────────────────────────────────────────────────
+  /insights:
+    get:
+      operationId: getInsights
+      tags: [insights]
+      summary: Get auto-generated insights about coding patterns
+      responses:
+        "200":
+          description: Insights
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Insight"
+
+  # ─── EXPORT ──────────────────────────────────────────────────────────────────
+  /export/json:
+    get:
+      operationId: exportJson
+      tags: [export]
+      summary: Export all activity as JSON
+      responses:
+        "200":
+          description: JSON export
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportData"
+
+  /export/csv:
+    get:
+      operationId: exportCsv
+      tags: [export]
+      summary: Export all activity as CSV
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    # ─── USER ─────────────────────────────────────────────────────────────────
+    UserProfile:
+      type: object
+      required: [id, displayName, onboardingComplete, platforms, createdAt]
+      properties:
+        id:
+          type: integer
+        displayName:
+          type: string
+        avatarUrl:
+          type: ["string", "null"]
+        onboardingComplete:
+          type: boolean
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformHandle"
+        createdAt:
+          type: string
+          format: date-time
+        lastSyncAt:
+          type: ["string", "null"]
+          format: date-time
+
+    UserProfileInput:
+      type: object
+      required: [displayName]
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+        avatarUrl:
+          type: string
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformHandle"
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+        avatarUrl:
+          type: string
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformHandle"
+
+    PlatformHandle:
+      type: object
+      required: [platformId, handle]
+      properties:
+        platformId:
+          type: string
+        handle:
+          type: string
+
+    # ─── PLATFORMS ────────────────────────────────────────────────────────────
+    PlatformStatus:
+      type: object
+      required: [id, name, slug, connected, color, logoUrl]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        connected:
+          type: boolean
+        handle:
+          type: ["string", "null"]
+        color:
+          type: string
+        logoUrl:
+          type: string
+        lastSyncAt:
+          type: ["string", "null"]
+          format: date-time
+        syncStatus:
+          type: ["string", "null"]
+          enum: [idle, syncing, error, null]
+        totalSolved:
+          type: ["integer", "null"]
+        errorMessage:
+          type: ["string", "null"]
+
+    PlatformConnection:
+      type: object
+      required: [handle]
+      properties:
+        handle:
+          type: string
+          minLength: 1
+
+    SyncResult:
+      type: object
+      required: [platformId, status, newSubmissions]
+      properties:
+        platformId:
+          type: string
+        status:
+          type: string
+          enum: [success, partial, error]
+        newSubmissions:
+          type: integer
+        errorMessage:
+          type: ["string", "null"]
+        syncedAt:
+          type: string
+          format: date-time
+
+    BulkSyncResult:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncResult"
+
+    PlatformDetailStats:
+      type: object
+      required: [platformId, name, totalSolved, easySolved, mediumSolved, hardSolved]
+      properties:
+        platformId:
+          type: string
+        name:
+          type: string
+        handle:
+          type: string
+        totalSolved:
+          type: integer
+        easySolved:
+          type: integer
+        mediumSolved:
+          type: integer
+        hardSolved:
+          type: integer
+        totalSubmissions:
+          type: integer
+        acceptanceRate:
+          type: ["number", "null"]
+        ranking:
+          type: ["integer", "null"]
+        rating:
+          type: ["number", "null"]
+        streak:
+          type: ["integer", "null"]
+        maxStreak:
+          type: ["integer", "null"]
+        contestsParticipated:
+          type: ["integer", "null"]
+        activeDays:
+          type: integer
+        topicsBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopicCount"
+        languagesUsed:
+          type: array
+          items:
+            $ref: "#/components/schemas/LanguageCount"
+        recentSubmissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+        badges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Badge"
+        submissionGraph:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayCount"
+
+    # ─── DASHBOARD ────────────────────────────────────────────────────────────
+    DashboardOverview:
+      type: object
+      required: [totalSolved, activeDays, currentStreak, longestStreak, todaySolved, platformBreakdown, streakAtRisk]
+      properties:
+        totalSolved:
+          type: integer
+        activeDays:
+          type: integer
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        firstCodingDay:
+          type: ["string", "null"]
+          format: date
+        lastCodingDay:
+          type: ["string", "null"]
+          format: date
+        todaySolved:
+          type: integer
+        todayEasy:
+          type: integer
+        todayMedium:
+          type: integer
+        todayHard:
+          type: integer
+        totalContests:
+          type: integer
+        totalAccepted:
+          type: integer
+        platformBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformSolvedCount"
+        streakAtRisk:
+          type: boolean
+        weeklyActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayCount"
+
+    StreakInfo:
+      type: object
+      required: [currentStreak, longestStreak, activeDays, streakAtRisk]
+      properties:
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        activeDays:
+          type: integer
+        streakAtRisk:
+          type: boolean
+        currentStreakStart:
+          type: ["string", "null"]
+          format: date
+        longestStreakStart:
+          type: ["string", "null"]
+          format: date
+        longestStreakEnd:
+          type: ["string", "null"]
+          format: date
+        recentDays:
+          type: array
+          items:
+            $ref: "#/components/schemas/StreakDay"
+
+    StreakDay:
+      type: object
+      required: [date, active, count]
+      properties:
+        date:
+          type: string
+          format: date
+        active:
+          type: boolean
+        count:
+          type: integer
+
+    # ─── ACTIVITY ─────────────────────────────────────────────────────────────
+    Submission:
+      type: object
+      required: [id, platformId, platformName, problemName, solvedAt]
+      properties:
+        id:
+          type: integer
+        platformId:
+          type: string
+        platformName:
+          type: string
+        problemName:
+          type: string
+        problemUrl:
+          type: ["string", "null"]
+        difficulty:
+          type: ["string", "null"]
+          enum: [easy, medium, hard, null]
+        topic:
+          type: ["string", "null"]
+        language:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [accepted, wrong_answer, time_limit, runtime_error, compilation_error, unknown]
+        isContest:
+          type: boolean
+        solvedAt:
+          type: string
+          format: date-time
+        timeTakenMs:
+          type: ["integer", "null"]
+        companyTags:
+          type: array
+          items:
+            type: string
+
+    ActivityPage:
+      type: object
+      required: [items, total, page, limit, hasMore]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        hasMore:
+          type: boolean
+
+    CalendarDay:
+      type: object
+      required: [date, count, platforms]
+      properties:
+        date:
+          type: string
+          format: date
+        count:
+          type: integer
+        intensity:
+          type: integer
+          description: "0-4 intensity level for heatmap color"
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/CalendarPlatformEntry"
+
+    CalendarPlatformEntry:
+      type: object
+      required: [platformId, platformName, count, problems]
+      properties:
+        platformId:
+          type: string
+        platformName:
+          type: string
+        count:
+          type: integer
+        problems:
+          type: array
+          items:
+            type: string
+
+    TimelinePage:
+      type: object
+      required: [groups, nextCursor, hasMore]
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimelineGroup"
+        nextCursor:
+          type: ["string", "null"]
+        hasMore:
+          type: boolean
+
+    TimelineGroup:
+      type: object
+      required: [date, label, submissions]
+      properties:
+        date:
+          type: string
+          format: date
+        label:
+          type: string
+        submissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+
+    # ─── ANALYTICS ────────────────────────────────────────────────────────────
+    WeeklyAnalytics:
+      type: object
+      required: [weekStart, weekEnd, totalSolved, dailyCounts, difficultyBreakdown, topicBreakdown, platformBreakdown]
+      properties:
+        weekStart:
+          type: string
+          format: date
+        weekEnd:
+          type: string
+          format: date
+        totalSolved:
+          type: integer
+        activeDays:
+          type: integer
+        dailyCounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayCount"
+        difficultyBreakdown:
+          $ref: "#/components/schemas/DifficultyBreakdown"
+        topicBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopicCount"
+        platformBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformSolvedCount"
+        acceptedCount:
+          type: integer
+
+    MonthlyAnalytics:
+      type: object
+      required: [month, year, totalSolved, activeDays, avgPerDay, bestDay, worstDay, longestStreak, platformBreakdown]
+      properties:
+        month:
+          type: integer
+        year:
+          type: integer
+        totalSolved:
+          type: integer
+        activeDays:
+          type: integer
+        avgPerDay:
+          type: number
+        bestDay:
+          $ref: "#/components/schemas/DayCount"
+        worstDay:
+          $ref: "#/components/schemas/DayCount"
+        longestStreak:
+          type: integer
+        platformBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformSolvedCount"
+        dailyCounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayCount"
+        difficultyBreakdown:
+          $ref: "#/components/schemas/DifficultyBreakdown"
+
+    YearlyAnalytics:
+      type: object
+      required: [year, totalSolved, activeDays, longestStreak, monthlyTrend, calendarData]
+      properties:
+        year:
+          type: integer
+        totalSolved:
+          type: integer
+        activeDays:
+          type: integer
+        longestStreak:
+          type: integer
+        codingConsistency:
+          type: number
+          description: "Percentage of days with at least 1 problem solved"
+        monthlyTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthCount"
+        calendarData:
+          type: array
+          items:
+            $ref: "#/components/schemas/CalendarDay"
+        platformBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlatformSolvedCount"
+        growthRate:
+          type: ["number", "null"]
+          description: "YoY growth percentage"
+
+    # ─── SEARCH ───────────────────────────────────────────────────────────────
+    SearchResults:
+      type: object
+      required: [items, total, page, limit, hasMore]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        hasMore:
+          type: boolean
+        query:
+          type: string
+
+    # ─── INSIGHTS ─────────────────────────────────────────────────────────────
+    Insight:
+      type: object
+      required: [id, type, message, generatedAt]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [achievement, warning, trend, reminder, milestone]
+        message:
+          type: string
+        detail:
+          type: ["string", "null"]
+        generatedAt:
+          type: string
+          format: date-time
+
+    # ─── EXPORT ───────────────────────────────────────────────────────────────
+    ExportData:
+      type: object
+      required: [exportedAt, totalSubmissions, submissions]
+      properties:
+        exportedAt:
+          type: string
+          format: date-time
+        totalSubmissions:
+          type: integer
+        submissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+
+    # ─── SHARED ───────────────────────────────────────────────────────────────
+    PlatformSolvedCount:
+      type: object
+      required: [platformId, platformName, count]
+      properties:
+        platformId:
+          type: string
+        platformName:
+          type: string
+        count:
+          type: integer
+        color:
+          type: string
+
+    DifficultyBreakdown:
+      type: object
+      required: [easy, medium, hard]
+      properties:
+        easy:
+          type: integer
+        medium:
+          type: integer
+        hard:
+          type: integer
+
+    TopicCount:
+      type: object
+      required: [topic, count]
+      properties:
+        topic:
+          type: string
+        count:
+          type: integer
+
+    LanguageCount:
+      type: object
+      required: [language, count]
+      properties:
+        language:
+          type: string
+        count:
+          type: integer
+
+    DayCount:
+      type: object
+      required: [date, count]
+      properties:
+        date:
+          type: string
+          format: date
+        count:
+          type: integer
+
+    MonthCount:
+      type: object
+      required: [month, year, count]
+      properties:
+        month:
+          type: integer
+        year:
+          type: integer
+        count:
+          type: integer
+
+    Badge:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        iconUrl:
+          type: ["string", "null"]
+
+    StreakRiskAlert:
+      type: object
+      required: [atRisk, currentStreak, message]
+      properties:
+        atRisk:
+          type: boolean
+        currentStreak:
+          type: integer
+        message:
+          type: string

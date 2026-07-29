@@ -1,0 +1,410 @@
+Build a production-quality full-stack web application called CodeHub (name can be changed) that acts as a universal coding dashboard by aggregating data from multiple competitive programming and coding practice platforms into one personalized analytics dashboard.
+
+The application should require zero manual data entry. The user only provides their profile URLs or usernames once during onboarding. After that, the application automatically fetches and syncs their public activity.
+
+Goal
+
+The purpose of the application is to answer:
+
+What coding problems did I solve today?
+Which platform did I use?
+Am I maintaining my coding streak?
+How many problems have I solved overall?
+What topics am I focusing on?
+Which difficulty levels am I solving?
+How has my consistency changed over time?
+
+It should feel like a personal productivity dashboard rather than just another coding profile viewer.
+
+Supported Platforms
+
+The application should support as many of these as possible:
+
+LeetCode
+GeeksforGeeks
+Coding Ninjas
+Codeforces
+CodeChef
+AtCoder
+HackerRank
+HackerEarth
+CSES
+InterviewBit
+Spoj
+TopCoder
+CodeStudio
+Any other platform with publicly accessible profile/activity.
+
+Design the architecture so adding new platforms later requires only creating another adapter.
+
+Onboarding
+
+First time setup should simply ask for:
+
+Username OR
+Profile URL
+
+for every supported platform.
+
+Example:
+
+LeetCode: username
+
+GFG: profile URL
+
+Codeforces: username
+
+etc.
+
+Save these once.
+
+No repeated configuration.
+
+Data Collection Strategy
+
+Implement a layered approach:
+
+Official public APIs if available.
+Public GraphQL endpoints.
+Public profile pages.
+Structured scraping only where permitted.
+Optional browser automation for platforms that require login (only if the user explicitly enables it).
+
+Never violate robots.txt or platform Terms of Service.
+
+Every platform should implement a common interface like:
+
+getProfile()
+getSolvedProblems()
+getSubmissionHistory()
+getContestHistory()
+getDailyActivity()
+getStats()
+Dashboard Home
+
+The home page should immediately answer:
+
+Today's Activity
+
+Show:
+
+Problems solved today
+Platform
+Problem Name
+Difficulty
+Topic
+Time solved
+Link to problem
+
+If nothing solved today:
+
+Display:
+
+"No problems solved today."
+
+Today's Progress
+
+Show cards:
+
+Total solved today
+Easy
+Medium
+Hard
+Contest problems
+Time spent (if available)
+Overall Stats
+
+Show:
+
+Total Problems Solved
+
+Broken down by:
+
+LeetCode
+GFG
+Coding Ninjas
+Codeforces
+etc.
+
+Also show:
+
+Total contests
+Total accepted submissions
+Total active days
+Current streak
+Longest streak
+First coding day
+Latest coding day
+Universal Coding Streak
+
+This is extremely important.
+
+Ignore which platform was used.
+
+If the user solved at least one problem anywhere that day,
+count that day toward the streak.
+
+Example:
+
+Monday:
+LeetCode
+
+Tuesday:
+GFG
+
+Wednesday:
+Coding Ninjas
+
+The streak should be 3 days.
+
+Build this using merged activity across all platforms.
+
+Calendar View
+
+Build a GitHub-style contribution calendar.
+
+Every day should display:
+
+number of problems solved
+platform icons
+hover tooltip showing:
+July 18
+
+4 Problems
+
+LeetCode:
+Two Sum
+Binary Search
+
+GFG:
+BFS Traversal
+
+Codeforces:
+1850A
+
+Color intensity should represent coding volume.
+
+Timeline
+
+Infinite scroll timeline like GitHub.
+
+Example:
+
+Today
+
+Solved:
+
+Two Sum
+(LeetCode)
+
+Binary Tree Level Order
+(GFG)
+
+----------------
+
+Yesterday
+
+Solved:
+
+Graph Traversal
+
+etc.
+Weekly Analytics
+
+Charts:
+
+Problems solved each day
+
+Platforms used
+
+Difficulty distribution
+
+Acceptance count
+
+Topic distribution
+
+Monthly Analytics
+
+Show:
+
+Total solved
+
+Active days
+
+Average/day
+
+Best day
+
+Worst day
+
+Longest streak
+
+Platform usage
+
+Yearly Analytics
+
+Heatmaps
+
+Total problems
+
+Monthly trend
+
+Coding consistency
+
+Growth graph
+
+Platform Breakdown
+
+Clicking any platform opens detailed analytics.
+
+Example:
+
+LeetCode
+
+Show:
+
+Total solved
+
+Easy
+
+Medium
+
+Hard
+
+Acceptance
+
+Submission graph
+
+Contest history
+
+Ranking
+
+Badges
+
+Streak
+
+Recent problems
+
+Topics
+
+Languages used
+
+Similar pages for every platform.
+
+Search
+
+Global search.
+
+Search by:
+
+Problem name
+
+Platform
+
+Difficulty
+
+Topic
+
+Date
+
+Company tag (if available)
+
+Filters
+
+Filter activity by:
+
+Platform
+
+Difficulty
+
+Date range
+
+Topic
+
+Contest
+
+Practice
+
+Accepted only
+
+Insights
+
+Generate useful insights automatically.
+
+Examples:
+
+You solved 35 Graph problems this month.
+Your Medium problem solving has increased by 40%.
+Your consistency improved compared to last month.
+You haven't solved any Dynamic Programming problem recently.
+Your longest streak was 21 days.
+Saturday is your most productive coding day.
+Reminder System
+
+If no coding activity is detected today,
+
+show:
+
+"Your streak is at risk."
+
+If streak is broken:
+
+show:
+
+"Let's start a new streak today."
+
+Leaderboard Mode (Optional)
+
+Allow users to compare dashboards with friends by sharing profile links.
+
+Export
+
+Export:
+
+CSV
+JSON
+PDF report
+Monthly summary
+Mobile Responsive
+
+The dashboard should work perfectly on desktop, tablet, and mobile.
+
+UI Requirements
+
+Modern dark theme.
+
+Beautiful gradients.
+
+Smooth animations.
+
+GitHub-like calendar.
+
+Interactive charts.
+
+Platform logos.
+
+Fast loading.
+
+Minimal but premium.
+
+Dashboard should feel comparable to Linear, GitHub, or Vercel.
+
+Technical Requirements
+Modular adapter architecture for platforms.
+Background sync jobs.
+Caching to reduce repeated requests.
+Rate-limit handling.
+Retry logic.
+Persistent local database.
+User authentication (optional).
+Docker support.
+Clean architecture.
+Type-safe code.
+Comprehensive documentation.
+Important Constraint
+
+The application must gracefully handle platforms that do not expose complete public activity. If certain data cannot legally or technically be retrieved, clearly indicate that limitation in the UI rather than fabricating or estimating data. The architecture should make it easy to add richer integrations in the future as platforms expose new APIs.
+
+The final result should feel like a single unified coding operating system for a programmer, where all coding activity across multiple platforms is automatically consolidated into one personal productivity dashboard with minimal setup.
+
+The AI should discover and integrate the best available official APIs, GraphQL endpoints, or public profile endpoints for each platform. If API credentials are required, automatically generate a .env.example file listing all required environment variables, explain exactly how to obtain each credential with step-by-step instructions, and implement the rest of the integration. The user should only need to paste the credentials if absolutely necessary.

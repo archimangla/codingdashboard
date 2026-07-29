@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: 'Space Mono', monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+:root {
+  --background: 222 29% 7%; /* #0B0E14 */
+  --foreground: 210 40% 98%;
+  --border: 220 25% 15%;
+  --input: 220 25% 15%;
+  --ring: 180 100% 50%; /* Cyan */
+
+  --card: 222 25% 10%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 220 25% 15%;
+
+  --popover: 222 29% 7%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 220 25% 15%;
+
+  --primary: 180 100% 50%; /* #00F0FF */
+  --primary-foreground: 222 29% 7%;
+  --primary-border: hsl(180 100% 50% / 0.5);
+
+  --secondary: 255 83% 63%; /* #6C5CE7 */
+  --secondary-foreground: 210 40% 98%;
+  --secondary-border: hsl(255 83% 63% / 0.5);
+
+  --muted: 220 20% 15%;
+  --muted-foreground: 215 20% 65%;
+  --muted-border: 220 25% 20%;
+
+  --accent: 220 25% 15%;
+  --accent-foreground: 210 40% 98%;
+  --accent-border: 220 25% 20%;
+
+  --destructive: 345 100% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --destructive-border: hsl(345 100% 60% / 0.5);
+
+  --sidebar: 222 29% 7%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 220 25% 15%;
+  --sidebar-primary: 180 100% 50%;
+  --sidebar-primary-foreground: 222 29% 7%;
+  --sidebar-accent: 220 25% 15%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-ring: 180 100% 50%;
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  /* Same as root because it's a precision dark OS */
+  --background: 222 29% 7%; 
+  --foreground: 210 40% 98%;
+  --border: 220 25% 15%;
+  --input: 220 25% 15%;
+  --ring: 180 100% 50%;
+
+  --card: 222 25% 10%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 220 25% 15%;
+
+  --popover: 222 29% 7%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 220 25% 15%;
+
+  --primary: 180 100% 50%; 
+  --primary-foreground: 222 29% 7%;
+  --primary-border: hsl(180 100% 50% / 0.5);
+
+  --secondary: 255 83% 63%; 
+  --secondary-foreground: 210 40% 98%;
+  --secondary-border: hsl(255 83% 63% / 0.5);
+
+  --muted: 220 20% 15%;
+  --muted-foreground: 215 20% 65%;
+  --muted-border: 220 25% 20%;
+
+  --accent: 220 25% 15%;
+  --accent-foreground: 210 40% 98%;
+  --accent-border: 220 25% 20%;
+
+  --destructive: 345 100% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --destructive-border: hsl(345 100% 60% / 0.5);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground selection:bg-primary/30 selection:text-primary-foreground;
+  }
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Heatmap base overrides */
+.react-activity-calendar {
+  --react-activity-calendar-color-theme-light: #21262d;
+  --react-activity-calendar-color-theme-dark: #21262d;
+}
+
+.difficulty-easy {
+  color: #00E676;
+}
+.difficulty-medium {
+  color: #FFD600;
+}
+.difficulty-hard {
+  color: #FF3366;
+}
+
+.bg-difficulty-easy {
+  background-color: rgba(0, 230, 118, 0.15);
+  color: #00E676;
+  border-color: rgba(0, 230, 118, 0.3);
+}
+.bg-difficulty-medium {
+  background-color: rgba(255, 214, 0, 0.15);
+  color: #FFD600;
+  border-color: rgba(255, 214, 0, 0.3);
+}
+.bg-difficulty-hard {
+  background-color: rgba(255, 51, 102, 0.15);
+  color: #FF3366;
+  border-color: rgba(255, 51, 102, 0.3);
+}
