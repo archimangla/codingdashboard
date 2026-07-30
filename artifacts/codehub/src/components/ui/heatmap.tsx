@@ -50,7 +50,7 @@ export function Heatmap({ data }: HeatmapProps) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   
   // Find which columns start a new month for labels
-  const monthLabels = [];
+  const monthLabels: { text: string; colIndex: number }[] = [];
   let currentMonth = -1;
   columns.forEach((col, i) => {
     const month = col[0].getMonth();
