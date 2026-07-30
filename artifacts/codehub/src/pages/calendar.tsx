@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 import { useGetActivityCalendar } from "@workspace/api-client-react";
 import { Heatmap } from "@/components/ui/heatmap";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,13 +10,14 @@ export default function Calendar() {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState<string>(currentYear.toString());
 
-  const { data: calendarData, isLoading } = useGetActivityCalendar({
-    query: {
-      queryKey: ['calendar', parseInt(year)],
-      keepPreviousData: true
-    },
-    year: parseInt(year)
-  });
+  const { data: calendarData, isLoading } = useGetActivityCalendar(
+    { year: parseInt(year) },
+    {
+      query: {
+        placeholderData: keepPreviousData
+      }
+    }
+  );
 
   const years = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
 
