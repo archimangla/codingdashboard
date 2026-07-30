@@ -7,7 +7,7 @@ import {
   UpdateUserProfileBody,
   UpdateUserProfileResponse,
 } from "@workspace/api-zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { IRouter } from "express";
 
 const router: IRouter = Router();
