@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 import { useSearch } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon, Loader2, ArrowRight } from "lucide-react";
@@ -20,15 +21,18 @@ export default function Search() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
 
-  const { data, isLoading } = useSearch({
-    query: {
-      queryKey: ['search', debouncedQuery],
-      enabled: debouncedQuery.length > 1,
-      keepPreviousData: true
+  const { data, isLoading } = useSearch(
+    {
+      q: debouncedQuery,
+      limit: 50
     },
-    q: debouncedQuery,
-    limit: 50
-  });
+    {
+      query: {
+        enabled: debouncedQuery.length > 1,
+        placeholderData: keepPreviousData
+      }
+    }
+  );
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pt-6">
