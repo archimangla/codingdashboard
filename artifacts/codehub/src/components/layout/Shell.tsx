@@ -13,6 +13,17 @@ export function Shell({ children }: ShellProps) {
   const [location, setLocation] = useLocation();
   const { data: profile, isLoading, isError } = useGetUserProfile();
 
+  // The onboarding page manages its own data fetching internally and
+  // should never be blocked by the shell's own profile check. Checking
+  // this first (before the isLoading gate below) matters: a brand-new
+  // user's profile fetch is *expected* to 404, and while that's
+  // resolving (or retrying), the old code showed the shell's full-page
+  // skeleton indefinitely instead of ever letting the onboarding form
+  // itself render.
+  if (location === "/onboarding") {
+    return <div className="h-[100dvh] bg-background w-full overflow-hidden text-foreground">{children}</div>;
+  }
+
   if (isLoading) {
     return (
       <div className="h-screen w-full flex bg-background">
@@ -34,15 +45,10 @@ export function Shell({ children }: ShellProps) {
 
   // If user is completely unauthenticated or doesn't exist, we might get 404 or 401
   // For this mock/demo, we assume 404 means they need to onboard
-  if ((isError || (profile && !profile.onboardingComplete)) && location !== "/onboarding") {
+  if (isError || (profile && !profile.onboardingComplete)) {
     // We defer navigation slightly to avoid react warnings about updating state during render
     setTimeout(() => setLocation("/onboarding"), 0);
     return null;
-  }
-
-  // If we are on onboarding, we don't show the standard shell
-  if (location === "/onboarding") {
-    return <div className="h-[100dvh] bg-background w-full overflow-hidden text-foreground">{children}</div>;
   }
 
   return (
