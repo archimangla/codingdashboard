@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 import { useGetWeeklyAnalytics, useGetMonthlyAnalytics, useGetYearlyAnalytics } from "@workspace/api-client-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -39,8 +40,8 @@ export default function Analytics() {
 }
 
 function WeeklyView() {
-  const { data, isLoading } = useGetWeeklyAnalytics({
-    query: { keepPreviousData: true }
+  const { data, isLoading } = useGetWeeklyAnalytics(undefined, {
+    query: { placeholderData: keepPreviousData }
   });
 
   if (isLoading) return <AnalyticsSkeleton />;
@@ -120,11 +121,15 @@ function WeeklyView() {
 
 function MonthlyView() {
   const date = new Date();
-  const { data, isLoading } = useGetMonthlyAnalytics({
-    query: { keepPreviousData: true },
-    month: date.getMonth() + 1,
-    year: date.getFullYear()
-  });
+  const { data, isLoading } = useGetMonthlyAnalytics(
+    {
+      month: date.getMonth() + 1,
+      year: date.getFullYear()
+    },
+    {
+      query: { placeholderData: keepPreviousData }
+    }
+  );
 
   if (isLoading) return <AnalyticsSkeleton />;
   if (!data) return <div className="text-muted-foreground text-center py-10">No data available</div>;
@@ -190,10 +195,12 @@ function MonthlyView() {
 
 function YearlyView() {
   const year = new Date().getFullYear();
-  const { data, isLoading } = useGetYearlyAnalytics({
-    query: { keepPreviousData: true },
-    year
-  });
+  const { data, isLoading } = useGetYearlyAnalytics(
+    { year },
+    {
+      query: { placeholderData: keepPreviousData }
+    }
+  );
 
   if (isLoading) return <AnalyticsSkeleton />;
   if (!data) return <div className="text-muted-foreground text-center py-10">No data available</div>;
