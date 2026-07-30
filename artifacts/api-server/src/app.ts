@@ -29,7 +29,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Mounted twice on purpose. Vercel's rewrite that routes /api/* requests
+// to this function may or may not preserve the "/api" prefix on the path
+// it actually hands to Express (this differs across setups and isn't
+// something we can fully verify without a live deployment). Handling
+// both means it works correctly either way instead of guessing wrong
+// and 404ing on every request.
 app.use("/api", router);
+app.use("/", router);
 
 // Global error handler. Without this, Express's built-in default handler
 // swallows the real error message/stack -- routes only ever show up in
