@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 import { useListActivity, ListActivityDifficulty } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,17 +15,20 @@ export default function Activity() {
   const [acceptedOnly, setAcceptedOnly] = useState(false);
   const [contestOnly, setContestOnly] = useState(false);
 
-  const { data, isLoading } = useListActivity({
-    query: {
-      queryKey: ['activity', page, difficulty, acceptedOnly, contestOnly],
-      keepPreviousData: true
+  const { data, isLoading } = useListActivity(
+    {
+      difficulty: difficulty === "all" ? undefined : difficulty,
+      accepted_only: acceptedOnly ? true : undefined,
+      contest_only: contestOnly ? true : undefined,
+      page,
+      limit: 20
     },
-    difficulty: difficulty === "all" ? undefined : difficulty,
-    accepted_only: acceptedOnly ? true : undefined,
-    contest_only: contestOnly ? true : undefined,
-    page,
-    limit: 20
-  });
+    {
+      query: {
+        placeholderData: keepPreviousData
+      }
+    }
+  );
 
   return (
     <div className="space-y-6">
