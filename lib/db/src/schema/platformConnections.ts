@@ -10,6 +10,14 @@ export const platformConnectionsTable = pgTable("platform_connections", {
   syncStatus: text("sync_status").notNull().default("idle"), // idle | syncing | error
   lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
   errorMessage: text("error_message"),
+  // Aggregate stats reported directly by a platform's adapter. Some
+  // platforms (e.g. GeeksforGeeks) can only ever provide an aggregate
+  // solved count / rank -- they have no dated per-problem submission
+  // history available publicly, so there's nothing to insert into
+  // submissionsTable for them. Without storing these here, that data
+  // has nowhere to go and silently disappears after every sync.
+  totalSolved: integer("total_solved"),
+  ranking: integer("ranking"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (t) => [
