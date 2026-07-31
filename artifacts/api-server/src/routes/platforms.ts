@@ -40,7 +40,7 @@ router.get("/platforms", async (req, res): Promise<void> => {
       handle: conn?.handle ?? null,
       lastSyncAt: conn?.lastSyncAt?.toISOString() ?? null,
       syncStatus: conn?.syncStatus ?? null,
-      totalSolved: null,
+      totalSolved: conn?.totalSolved ?? null,
       errorMessage: conn?.errorMessage ?? null,
     };
   });
@@ -224,13 +224,19 @@ router.get("/platforms/:platformId/stats", async (req, res): Promise<void> => {
       platformId,
       name: platform.name,
       handle: conn?.handle ?? "",
-      totalSolved: accepted.length,
+      // Prefer counting actual submission rows when they exist (more
+      // accurate, and needed for the breakdown fields below anyway). Fall
+      // back to the connection's stored aggregate total for platforms
+      // like GFG that structurally can't have dated submission rows --
+      // without this fallback, those platforms always show 0 even after
+      // a fully successful sync, since accepted.length is always 0 for them.
+      totalSolved: subs.length > 0 ? accepted.length : (conn?.totalSolved ?? accepted.length),
       easySolved,
       mediumSolved,
       hardSolved,
       totalSubmissions: subs.length,
       acceptanceRate: subs.length > 0 ? accepted.length / subs.length : null,
-      ranking: null,
+      ranking: conn?.ranking ?? null,
       rating: null,
       streak: null,
       maxStreak: null,
