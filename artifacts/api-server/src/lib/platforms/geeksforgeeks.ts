@@ -59,7 +59,13 @@ const mirrorClassic: MirrorParser = async (handle) => {
   const data = await fetchJson(
     `https://geeks-for-geeks-api.vercel.app/${encodeURIComponent(handle)}`,
   );
-  const total = toInt(data?.info?.totalProblemsSolved);
+  // Field name verified against the live API's actual response shape --
+  // it's `info.solved`, not `info.totalProblemsSolved` (the latter was a
+  // wrong assumption in an earlier version of this file that was never
+  // caught because this endpoint couldn't be reached from the sandbox
+  // used to originally write it). Checking both defensively in case the
+  // API's shape ever changes again.
+  const total = toInt(data?.info?.solved ?? data?.info?.totalProblemsSolved);
   const rank = toInt(data?.info?.instituteRank);
   if (total === undefined) return null;
   return { totalSolved: total, ranking: rank };
@@ -151,7 +157,9 @@ export const geeksforgeeksAdapter: PlatformAdapter = {
           // data (no dated submission history exists anywhere publicly),
           // surfaced so the UI can explain why GFG has no activity
           // calendar / timeline entries even though the sync succeeded.
-          error:
+          // Uses `note`, not `error` -- this must NOT downgrade the sync
+          // status, since the sync genuinely succeeded.
+          note:
             "GeeksforGeeks does not publicly expose dated submission history, so only the total solved count (and rank, when available) can be synced -- no per-day activity, streak graph, or timeline entries are possible for this platform.",
         };
       }
