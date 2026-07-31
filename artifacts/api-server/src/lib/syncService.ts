@@ -59,14 +59,16 @@ export async function syncPlatform(userId: number, platformId: string, handle: s
       .set({
         syncStatus: "idle",
         lastSyncAt: new Date(),
-        errorMessage: result.error ?? null,
+        errorMessage: result.error ?? result.note ?? null,
+        totalSolved: result.totalSolved ?? null,
+        ranking: result.ranking ?? null,
       })
       .where(and(eq(platformConnectionsTable.userId, userId), eq(platformConnectionsTable.platformId, platformId)));
 
     return {
       status: finalStatus as "success" | "partial",
       newSubmissions: newSubs.length,
-      errorMessage: result.error ?? null,
+      errorMessage: result.error ?? result.note ?? null,
     };
   } catch (err) {
     logger.error({ err, platformId, handle }, "Sync failed");
