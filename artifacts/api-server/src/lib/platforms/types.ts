@@ -19,7 +19,12 @@ export interface PlatformAdapterResult {
   totalSolved?: number;
   rating?: number;
   ranking?: number;
+  /** A real failure -- downgrades sync status to "partial". */
   error?: string;
+  /** An informational message shown to the user that does NOT indicate
+   *  anything went wrong (e.g. "this platform doesn't expose dated
+   *  history"). Doesn't affect sync status. */
+  note?: string;
 }
 
 export interface PlatformAdapter {
